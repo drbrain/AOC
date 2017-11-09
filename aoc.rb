@@ -24,11 +24,20 @@ class AOC::Input
       end
   end
 
-  def input day
+  def input day, split:
     url = URI "https://adventofcode.com/2016/day/#{day}/input"
 
     fetch url do |res|
-      yield res.body
+      case split
+      when "," then
+        fields = res.body.split ","
+
+        fields.each do |field|
+          yield field.strip
+        end
+      else
+        raise ArgumentError, "unknown split type #{split}"
+      end
     end
   end
 end
@@ -36,8 +45,8 @@ end
 module AOC
   INPUT = AOC::Input.new
 
-  def input day, &block
-    INPUT.input day, &block
+  def input day, **options, &block
+    INPUT.input day, **options, &block
   end
 end
 
