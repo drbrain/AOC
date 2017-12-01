@@ -1,4 +1,4 @@
-require_relative "aoc"
+require_relative "../aoc"
 
 directions = %i[north east south west]
 x, y = 0, 0
