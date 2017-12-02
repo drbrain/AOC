@@ -4,7 +4,7 @@ directions = %i[north east south west]
 x, y = 0, 0
 direction = 0
 
-input 1, split: "," do |input|
+input 2016, 1, split: "," do |input|
   /(?<turn>.)(?<blocks>.+)/ =~ input
 
   blocks = Integer blocks

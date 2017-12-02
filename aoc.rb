@@ -24,20 +24,27 @@ class AOC::Input
       end
   end
 
-  def input day, split:
-    url = URI "https://adventofcode.com/2016/day/#{day}/input"
+  def input year, day, split: nil
+    url = URI "https://adventofcode.com/#{year}/day/#{day}/input"
 
     fetch url do |res|
-      case split
-      when "," then
-        fields = res.body.split ","
+      input = res.body
 
-        fields.each do |field|
-          yield field.strip
+      result =
+        case split
+        when "," then
+          fields = input.split ","
+
+          fields.each do |field|
+            yield field.strip
+          end
+        when nil then
+          yield input
+        else
+          raise ArgumentError, "unknown split type #{split}"
         end
-      else
-        raise ArgumentError, "unknown split type #{split}"
-      end
+
+      return result
     end
   end
 end
@@ -45,8 +52,47 @@ end
 module AOC
   INPUT = AOC::Input.new
 
-  def input day, **options, &block
-    INPUT.input day, **options, &block
+  def input_part_1 year, day, **options, &block
+    run_tests part: 1, &block
+
+    result = INPUT.input year, day, **options, &block
+
+    puts "part 1: #{result}"
+  end
+
+  def input_part_2 year, day, **options, &block
+    run_tests part: 2, &block
+
+    result = INPUT.input year, day, **options, &block
+
+    puts "part 2: #{result}"
+  end
+
+  def run_tests part:
+    @tests[part].each do |input, expected|
+      result = yield input
+
+      abort <<-FAILED unless result == expected
+For input part 1:
+
+#{input}
+
+Expected:
+
+#{expected}
+
+Actual:
+
+#{result}
+      FAILED
+
+      puts "✅ #{input} → #{result}"
+    end
+  end
+
+  def test input, expected, part: 1
+    @tests ||= Hash.new { |h, k| h[k] = [] }
+    @tests[part] << [input, expected]
   end
 end
 
