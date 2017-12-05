@@ -52,24 +52,16 @@ end
 module AOC
   INPUT = AOC::Input.new
 
-  def input_part_1 year, day, **options, &block
-    run_tests part: 1, &block
+  def input year, day, **options, &block
+    run_tests &block
 
     result = INPUT.input year, day, **options, &block
 
-    puts "part 1: #{result}"
+    puts result
   end
 
-  def input_part_2 year, day, **options, &block
-    run_tests part: 2, &block
-
-    result = INPUT.input year, day, **options, &block
-
-    puts "part 2: #{result}"
-  end
-
-  def run_tests part:
-    @tests[part].each do |input, expected|
+  def run_tests
+    @tests.each do |input, expected|
       result = yield input
 
       abort <<-FAILED unless result == expected
@@ -90,11 +82,13 @@ Actual:
     end
   end
 
-  def test input, expected, part: 1
-    @tests ||= Hash.new { |h, k| h[k] = [] }
-    @tests[part] << [input, expected]
+  def test input, expected
+    @tests ||= []
+    @tests << [input, expected]
   end
 end
+
+Infinity = 1.0 / 0
 
 include AOC
 
