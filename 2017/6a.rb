@@ -25,8 +25,6 @@ input 2017, 6 do |input|
       banks[offset] += 1
     end
 
-    p count: banks
-
     count += 1
   end
 
