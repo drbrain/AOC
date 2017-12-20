@@ -63,6 +63,8 @@ module AOC
   end
 
   def run_tests
+    return unless @tests
+
     @test = true
 
     @tests.each do |input, expected|
