@@ -20,9 +20,11 @@ def weigh name
   weight = $weights[name]
   children = $tree[name]
 
-  children.map { |child|
+  child_weights = children.map { |child|
     weigh child
-  }.sum + weight
+  }
+
+  child_weights.sum + weight
 end
 
 input 2017, 7 do |input|
@@ -65,8 +67,7 @@ input 2017, 7 do |input|
       [name, weight]
     }
 
-    p child_weights
-
+    p root => child_weights
     break root if weight_counts.size == 1
 
     weight, = weight_counts.find { |name, count|
