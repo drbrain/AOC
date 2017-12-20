@@ -2,6 +2,7 @@ module AOC
 end
 
 require "net/http"
+require "pp"
 
 class AOC::Input
   def fetch uri
@@ -57,10 +58,13 @@ module AOC
 
     result = INPUT.input year, day, **options, &block
 
+
     puts result
   end
 
   def run_tests
+    @test = true
+
     @tests.each do |input, expected|
       result = yield input
 
@@ -80,11 +84,17 @@ Actual:
 
       puts "✅ #{input} → #{result}"
     end
+
+    @test = false
   end
 
   def test input, expected
     @tests ||= []
     @tests << [input, expected]
+  end
+
+  def test_run?
+    @test
   end
 end
 
