@@ -58,7 +58,6 @@ module AOC
 
     result = INPUT.input year, day, **options, &block
 
-
     puts result
   end
 
