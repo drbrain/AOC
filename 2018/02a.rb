@@ -1,5 +1,9 @@
 require_relative "../aoc"
 
+##
+# Determines if any characters in +id+ are repeated exactly +recurrences+
+# times and returns +true+ if a character does.
+
 def count id, recurrences
   seen = Hash.new 0
 
@@ -19,6 +23,9 @@ aabcdd
 abcdee
 ababab
 INPUT
+
+##
+# I'm not fond of this implementation because it processes each id twice.
 
 input 2018, 2 do |ids|
   twos   = 0

@@ -6,6 +6,10 @@ test "+3 +3 +4 -2 -4", 10
 test "-6 +3 +8 +5 -6", 5
 test "+7 +7 -2 -7 -4", 14
 
+##
+# This problem is a great place to show off Enumerable#cycle which endlessly
+# loops over an Enumerable.
+
 input 2018, 1 do |input|
   frequencies = input.split /\s/
   frequencies.map! { |input| Integer input }

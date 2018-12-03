@@ -7,15 +7,25 @@ test <<-TEST, 3
 #3 @ 5,5: 2x2
 TEST
 
+##
+# The <code>reclaimed[id] = true</code> was an important piece I missed and
+# was a source of great confusion when my first answer didn't work.  It took
+# me some time to realize that I needed to mark the claim that was colliding
+# with the other claims was also in conflict.
+#
+# When I was documenting this solution I realized I could ask the +reclaimed+
+# Hash directly which claim was not covered by other claims, provided a claim
+# started out marked as not-reclaimed.
+
 input 2018, 3 do |claims|
-  ids       = nil
   reclaimed = {}
+  # [x, y] coordinates => Array of ids of other claims for this coordinate
   fabric    = Hash.new { |h, location| h[location] = [] }
 
   claims.lines.each do |line|
     id, x_offset, y_offset, h, w = line.scanf "#%d @ %d,%d: %dx%d"
 
-    ids = id
+    reclaimed[id] = false
 
     (x_offset...x_offset + h).each do |x|
       (y_offset...y_offset + w).each do |y|
@@ -35,7 +45,5 @@ input 2018, 3 do |claims|
     end
   end
 
-  1.upto(ids).find { |id|
-    not reclaimed.include? id
-  }
+  reclaimed.rassoc(false).first
 end

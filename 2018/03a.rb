@@ -7,6 +7,11 @@ test <<-TEST, 4
 #3 @ 5,5: 2x2
 TEST
 
+##
+# I remembered I could use String#scanf here to avoid manual conversion to
+# integers.  I think that makes the implementation otherwise look a little
+# more straightforward.
+
 input 2018, 3 do |claims|
   fabric = Hash.new 0
 
