@@ -25,27 +25,21 @@ class AOC::Input
       end
   end
 
-  def input year, day, split: nil
+  def input year, day
+    if File.exist? "#{day}.input" then
+      input = File.read "#{day}.input"
+
+      return yield input
+    end
+
     url = URI "https://adventofcode.com/#{year}/day/#{day}/input"
 
     fetch url do |res|
       input = res.body
 
-      result =
-        case split
-        when "," then
-          fields = input.split ","
+      File.write "#{day}.input", input
 
-          fields.each do |field|
-            yield field.strip
-          end
-        when nil then
-          yield input
-        else
-          raise ArgumentError, "unknown split type #{split}"
-        end
-
-      return result
+      return yield input
     end
   end
 end
