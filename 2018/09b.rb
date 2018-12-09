@@ -127,8 +127,6 @@ input 2018, 9 do |input|
   (1..players).cycle do |player|
     marble = marbles.shift
 
-    puts marble if (marble % 1000).zero?
-
     if (marble % 23).zero? then
       circle = circle.reverse 7
 
