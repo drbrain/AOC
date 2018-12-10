@@ -100,6 +100,9 @@ end
 # needed to run it until it got small enough to be printable so I added
 # Canvas#area and printed the seconds taken and the size.
 #
+# I chose to make Canvas immutable at the start and got lucky when this worked
+# perfectly for checking the area growth.
+#
 # After finding the second with the smallest size I printed the canvas and got
 # the message.  Some extra work was done to clean this up to make it automatic
 # after submitting the answers.
