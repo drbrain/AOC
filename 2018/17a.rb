@@ -54,7 +54,7 @@ class Profile
     to_do   = [@spring]
 
     until to_do.empty? do
-      puts "#{current} using #{water_used}" if (water_used % 100).zero?
+      #puts "#{current} using #{water_used}" if (water_used % 100).zero?
       #break if water_used >= 500
 
       current = to_do.shift
@@ -245,28 +245,23 @@ class Flow < Water
       [Flow.new(@profile, below_coordinate)]
 
     when "#", "~" then
-      if bounds = level_bounds then
-        contained =
-          level_bounds.all? { |x|
-            ["#", "~"].include? @profile[[x, @y + 1]]
-          }
+      return flow_left_right unless bounds = level_bounds
 
-        if contained then
-          settles = level_bounds.map { |x|
-            Settle.new @profile, [x, @y]
-          }
+      contained =
+        level_bounds.all? { |x|
+          ["#", "~"].include? @profile[[x, @y + 1]]
+        }
 
-          fill_up = Flow.new @profile, above_coordinate
+      return flow_left_right unless contained
 
-          settles << fill_up
-          settles
-        else
-          flow_left_right
-        end
-      else
-        flow_left_right
-      end
+      settles = level_bounds.map { |x|
+        Settle.new @profile, [x, @y]
+      }
 
+      fill_up = Flow.new @profile, above_coordinate
+
+      settles << fill_up
+      settles
     when "|" then
       [] # ignore
     else
@@ -365,7 +360,7 @@ input 2018, 17 do |input|
 
   profile.flow
 
-  puts profile
+  #puts profile
 
   profile.water_used
 end
