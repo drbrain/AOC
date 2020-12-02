@@ -5,13 +5,19 @@ use itertools::Itertools;
 use std::fs::File;
 use std::io;
 use std::io::Read;
+use std::ops::Range;
 use std::path::Path;
+use std::str::FromStr;
 
 fn main() -> Result<()> {
-    let input = read("./01.input")?;
+    //let input = read("./01.input")?;
 
-    println!("part A: {}", day_1(&input, 2)?);
-    println!("part B: {}", day_1(&input, 3)?);
+    //println!("part A: {}", day_1(&input, 2)?);
+    //println!("part B: {}", day_1(&input, 3)?);
+
+    let input = read("./02.input")?;
+
+    println!("part A: {}", day_2(&input)?);
 
     Ok(())
 }
@@ -31,6 +37,33 @@ fn day_1(input: &String, entries: usize) -> Result<u32> {
     let answer = entries.iter().fold(1, |a, b| a * b);
 
     Ok(answer)
+}
+
+fn day_2(input: &String) -> Result<usize> {
+    let valid = input
+        .lines()
+        .map(|line| parse_and_check(line))
+        .filter(|ok| *ok)
+        .count();
+
+    Ok(valid)
+}
+
+fn parse_and_check(line: &str) -> bool {
+    let split: Vec<&str> = line.split(": ").collect();
+
+    let policy: Vec<&str> = split[0].split(' ').collect();
+    let password = split[1];
+
+    let range: Vec<&str> = policy[0].split('-').collect();
+    let letter = char::from_str(policy[1]).unwrap();
+
+    let start = range[0].parse::<usize>().unwrap();
+    let end = range[1].parse::<usize>().unwrap() + 1;
+
+    let range = Range { start, end };
+
+    range.contains(&password.chars().filter(|c| c == &letter).count())
 }
 
 fn read<P>(filename: P) -> io::Result<String>
@@ -61,5 +94,16 @@ mod test {
         let input = String::from("1721\n979\n366\n299\n675\n1456\n");
 
         assert_eq!(241861950, day_1(&input, 3).unwrap());
+    }
+
+    #[test]
+    fn test_day_2_a() {
+        let input = String::from(
+            "1-3 a: abcde
+1-3 b: cdefg
+2-9 c: ccccccccc",
+        );
+
+        assert_eq!(2, day_2(&input).unwrap());
     }
 }
