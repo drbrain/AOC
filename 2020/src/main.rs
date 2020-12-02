@@ -17,7 +17,8 @@ fn main() -> Result<()> {
 
     let input = read("./02.input")?;
 
-    println!("part A: {}", day_2(&input)?);
+    //println!("part A: {}", day_2_a(&input)?);
+    println!("part B: {}", day_2_b(&input)?);
 
     Ok(())
 }
@@ -39,17 +40,27 @@ fn day_1(input: &String, entries: usize) -> Result<u32> {
     Ok(answer)
 }
 
-fn day_2(input: &String) -> Result<usize> {
+fn day_2_a(input: &String) -> Result<usize> {
     let valid = input
         .lines()
-        .map(|line| parse_and_check(line))
+        .map(|line| parse_and_check_a(line))
         .filter(|ok| *ok)
         .count();
 
     Ok(valid)
 }
 
-fn parse_and_check(line: &str) -> bool {
+fn day_2_b(input: &String) -> Result<usize> {
+    let valid = input
+        .lines()
+        .map(|line| parse_and_check_b(line))
+        .filter(|ok| *ok)
+        .count();
+
+    Ok(valid)
+}
+
+fn parse_and_check_a(line: &str) -> bool {
     let split: Vec<&str> = line.split(": ").collect();
 
     let policy: Vec<&str> = split[0].split(' ').collect();
@@ -64,6 +75,27 @@ fn parse_and_check(line: &str) -> bool {
     let range = Range { start, end };
 
     range.contains(&password.chars().filter(|c| c == &letter).count())
+}
+
+fn parse_and_check_b(line: &str) -> bool {
+    let split: Vec<&str> = line.split(": ").collect();
+
+    let policy: Vec<&str> = split[0].split(' ').collect();
+    let password = split[1];
+
+    let positions: Vec<&str> = policy[0].split('-').collect();
+    let letter = policy[1];
+
+    let first = positions[0].parse::<usize>().unwrap() - 1;
+    let second = positions[1].parse::<usize>().unwrap() - 1;
+
+    match (&password[first..first + 1] == letter, &password[second..second + 1] == letter) {
+        (true, false) => true,
+        (false, true) => true,
+
+        (false, false) => false,
+        (true, true) => false,
+    }
 }
 
 fn read<P>(filename: P) -> io::Result<String>
@@ -104,6 +136,17 @@ mod test {
 2-9 c: ccccccccc",
         );
 
-        assert_eq!(2, day_2(&input).unwrap());
+        assert_eq!(2, day_2_a(&input).unwrap());
+    }
+
+    #[test]
+    fn test_day_2_b() {
+        let input = String::from(
+            "1-3 a: abcde
+1-3 b: cdefg
+2-9 c: ccccccccc",
+        );
+
+        assert_eq!(1, day_2_b(&input).unwrap());
     }
 }
