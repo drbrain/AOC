@@ -10,14 +10,13 @@ use std::path::Path;
 fn main() -> Result<()> {
     let input = read("./01.input")?;
 
-    let answer = day_1_a(input)?;
-
-    println!("answer: {}", answer);
+    println!("part A: {}", day_1(&input, 2)?);
+    println!("part B: {}", day_1(&input, 3)?);
 
     Ok(())
 }
 
-fn day_1_a(input: String) -> Result<u32> {
+fn day_1(input: &String, entries: usize) -> Result<u32> {
     let numbers: Vec<u32> = input
         .lines()
         .map(|line| line.parse::<u32>().unwrap())
@@ -25,11 +24,13 @@ fn day_1_a(input: String) -> Result<u32> {
 
     let entries: Vec<u32> = numbers
         .into_iter()
-        .combinations(2)
-        .find(|pair| pair[0] + pair[1] == 2020)
+        .combinations(entries)
+        .find(|pair| pair.iter().fold(0, |a, b| a + b) == 2020)
         .unwrap();
 
-    Ok(entries[0] * entries[1])
+    let answer = entries.iter().fold(1, |a, b| a * b);
+
+    Ok(answer)
 }
 
 fn read<P>(filename: P) -> io::Result<String>
@@ -49,9 +50,16 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_day_1_a_example() {
+    fn test_day_1_a() {
         let input = String::from("1721\n979\n366\n299\n675\n1456\n");
 
-        assert_eq!(514579, day_1_a(input).unwrap());
+        assert_eq!(514579, day_1(&input, 2).unwrap());
+    }
+
+    #[test]
+    fn test_day_1_b() {
+        let input = String::from("1721\n979\n366\n299\n675\n1456\n");
+
+        assert_eq!(241861950, day_1(&input, 3).unwrap());
     }
 }
