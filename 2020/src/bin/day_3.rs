@@ -14,13 +14,13 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn day_3_a(input: &String, slope: &Slope) -> Result<u64> {
+fn day_3_a(input: &str, slope: &Slope) -> Result<u64> {
     let field = Field::from(input);
 
     Ok(field.toboggan(slope))
 }
 
-fn day_3_b(input: &String) -> Result<u64> {
+fn day_3_b(input: &str) -> Result<u64> {
     let field = Field::from(input);
 
     let slopes = vec![
@@ -34,7 +34,7 @@ fn day_3_b(input: &String) -> Result<u64> {
     let answer = slopes
         .into_iter()
         .map(|slope| field.toboggan(&slope))
-        .fold(1, |a, b| a * b);
+        .product();
 
     Ok(answer)
 }
@@ -66,8 +66,8 @@ impl Field {
     }
 }
 
-impl From<&String> for Field {
-    fn from(string: &String) -> Self {
+impl From<&str> for Field {
+    fn from(string: &str) -> Self {
         let rows = string
             .lines()
             .map(|line| line.chars().map(|c| c == '#').collect())
