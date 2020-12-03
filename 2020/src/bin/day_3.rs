@@ -64,6 +64,7 @@ struct SlopeIter<'a> {
     run: usize,
     drop: usize,
     width: usize,
+    height: usize,
     row: usize,
     col: usize,
 }
@@ -73,8 +74,9 @@ impl SlopeIter<'_> {
         let row = drop;
         let col = run;
         let width = slope.rows[0].len();
+        let height = slope.rows.len();
 
-        SlopeIter { slope, run, drop, width, row, col }
+        SlopeIter { slope, run, drop, width, height, row, col }
     }
 }
 
@@ -82,7 +84,7 @@ impl Iterator for SlopeIter<'_> {
     type Item = bool;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.row >= self.slope.rows.len() {
+        if self.row >= self.height {
             return None;
         }
 
