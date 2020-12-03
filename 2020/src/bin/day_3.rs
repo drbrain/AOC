@@ -7,27 +7,33 @@ use std::convert::From;
 fn main() -> Result<()> {
     let input = read("./03.input")?;
 
-    println!("part A: {}", day_3_a(&input, 3, 1)?);
+    println!("part A: {}", day_3_a(&input, &Slope::new(3, 1))?);
 
     println!("part B: {}", day_3_b(&input)?);
 
     Ok(())
 }
 
-fn day_3_a(input: &String, run: usize, drop: usize) -> Result<u64> {
-    let slope = Slope::from(input);
+fn day_3_a(input: &String, slope: &Slope) -> Result<u64> {
+    let field = Field::from(input);
 
-    Ok(slope.toboggan(run, drop)?)
+    Ok(field.toboggan(slope))
 }
 
 fn day_3_b(input: &String) -> Result<u64> {
-    let slope = Slope::from(input);
+    let field = Field::from(input);
 
-    let slopes = vec![(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
+    let slopes = vec![
+        Slope::new(1, 1),
+        Slope::new(3, 1),
+        Slope::new(5, 1),
+        Slope::new(7, 1),
+        Slope::new(1, 2),
+    ];
 
     let answer = slopes
         .into_iter()
-        .map(|(run, drop)| slope.toboggan(run, drop).unwrap())
+        .map(|slope| field.toboggan(&slope))
         .fold(1, |a, b| a * b);
 
     Ok(answer)
@@ -35,32 +41,44 @@ fn day_3_b(input: &String) -> Result<u64> {
 
 #[derive(Debug)]
 struct Slope {
-    rows: Vec<Vec<bool>>,
+    pub run: usize,
+    pub drop: usize,
 }
 
 impl Slope {
-    fn toboggan(&self, run: usize, drop: usize) -> Result<u64> {
-        Ok(self.trees(run, drop).filter(|t| *t).count() as u64)
-    }
-
-    fn trees(&self, run: usize, drop: usize) -> SlopeIter {
-        SlopeIter::new(self, run, drop)
+    fn new(run: usize, drop: usize) -> Self {
+        Slope { run, drop }
     }
 }
 
-impl From<&String> for Slope {
+#[derive(Debug)]
+struct Field {
+    rows: Vec<Vec<bool>>,
+}
+
+impl Field {
+    fn toboggan(&self, slope: &Slope) -> u64 {
+        self.trees(slope).filter(|t| *t).count() as u64
+    }
+
+    fn trees(&self, slope: &Slope) -> FieldIter {
+        FieldIter::new(self, slope)
+    }
+}
+
+impl From<&String> for Field {
     fn from(string: &String) -> Self {
         let rows = string
             .lines()
             .map(|line| line.chars().map(|c| c == '#').collect())
             .collect();
 
-        Slope { rows }
+        Field { rows }
     }
 }
 
-struct SlopeIter<'a> {
-    slope: &'a Slope,
+struct FieldIter<'a> {
+    field: &'a Field,
     run: usize,
     drop: usize,
     width: usize,
@@ -69,18 +87,28 @@ struct SlopeIter<'a> {
     col: usize,
 }
 
-impl SlopeIter<'_> {
-    fn new<'a>(slope: &'a Slope, run: usize, drop: usize) -> SlopeIter<'a> {
-        let row = drop;
-        let col = run;
-        let width = slope.rows[0].len();
-        let height = slope.rows.len();
+impl FieldIter<'_> {
+    fn new<'a>(field: &'a Field, slope: &Slope) -> FieldIter<'a> {
+        let drop = slope.drop;
+        let run = slope.run;
+        let row = slope.drop;
+        let col = slope.run;
+        let width = field.rows[0].len();
+        let height = field.rows.len();
 
-        SlopeIter { slope, run, drop, width, height, row, col }
+        FieldIter {
+            field,
+            run,
+            drop,
+            width,
+            height,
+            row,
+            col,
+        }
     }
 }
 
-impl Iterator for SlopeIter<'_> {
+impl Iterator for FieldIter<'_> {
     type Item = bool;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -88,7 +116,7 @@ impl Iterator for SlopeIter<'_> {
             return None;
         }
 
-        let curr = self.slope.rows[self.row][self.col];
+        let curr = self.field.rows[self.row][self.col];
 
         self.row += self.drop;
         self.col += self.run;
