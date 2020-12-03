@@ -40,23 +40,11 @@ struct Slope {
 
 impl Slope {
     fn toboggan(&self, run: usize, drop: usize) -> Result<u64> {
-        let mut row = drop;
-        let mut col = run;
-        let width = self.rows[0].len();
-        let mut trees = 0;
+        Ok(self.trees(run, drop).filter(|t| *t).count() as u64)
+    }
 
-        while row < self.rows.len() {
-            col %= width;
-
-            if self.rows[row][col] {
-                trees += 1;
-            }
-
-            row += drop;
-            col += run;
-        }
-
-        Ok(trees)
+    fn trees(&self, run: usize, drop: usize) -> SlopeIter {
+        SlopeIter::new(self, run, drop)
     }
 }
 
@@ -68,6 +56,43 @@ impl From<&String> for Slope {
             .collect();
 
         Slope { rows }
+    }
+}
+
+struct SlopeIter<'a> {
+    slope: &'a Slope,
+    run: usize,
+    drop: usize,
+    width: usize,
+    row: usize,
+    col: usize,
+}
+
+impl SlopeIter<'_> {
+    fn new<'a>(slope: &'a Slope, run: usize, drop: usize) -> SlopeIter<'a> {
+        let row = drop;
+        let col = run;
+        let width = slope.rows[0].len();
+
+        SlopeIter { slope, run, drop, width, row, col }
+    }
+}
+
+impl Iterator for SlopeIter<'_> {
+    type Item = bool;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row >= self.slope.rows.len() {
+            return None;
+        }
+
+        let curr = self.slope.rows[self.row][self.col];
+
+        self.row += self.drop;
+        self.col += self.run;
+        self.col %= self.width;
+
+        Some(curr)
     }
 }
 
