@@ -58,10 +58,10 @@ struct Field {
 
 impl Field {
     fn toboggan(&self, slope: &Slope) -> u64 {
-        self.trees(slope).filter(|t| *t).count() as u64
+        self.points_on(slope).filter(|t| *t).count() as u64
     }
 
-    fn trees(&self, slope: &Slope) -> FieldIter {
+    fn points_on(&self, slope: &Slope) -> FieldIter {
         FieldIter::new(self, slope)
     }
 }
