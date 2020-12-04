@@ -13,7 +13,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn day_1(input: &String, entries: usize) -> Result<u32> {
+fn day_1(input: &str, entries: usize) -> Result<u32> {
     let numbers: Vec<u32> = input
         .lines()
         .map(|line| line.parse::<u32>().unwrap())
@@ -22,10 +22,10 @@ fn day_1(input: &String, entries: usize) -> Result<u32> {
     let entries: Vec<u32> = numbers
         .into_iter()
         .combinations(entries)
-        .find(|pair| pair.iter().fold(0, |a, b| a + b) == 2020)
+        .find(|pair| pair.iter().sum::<u32>() == 2020)
         .unwrap();
 
-    let answer = entries.iter().fold(1, |a, b| a * b);
+    let answer = entries.iter().product();
 
     Ok(answer)
 }
