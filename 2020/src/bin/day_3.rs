@@ -146,7 +146,7 @@ mod test {
 .#..#...#.#",
         );
 
-        assert_eq!(7, day_3_a(&input, 3, 1).unwrap());
+        assert_eq!(7, day_3_a(&input, &Slope::new(3, 1)).unwrap());
     }
 
     #[test]
