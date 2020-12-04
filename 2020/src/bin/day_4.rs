@@ -16,7 +16,7 @@ fn main() -> Result<()> {
 fn day_4_a(passports: &str) -> Result<usize> {
     let valid = passports
         .split("\n\n")
-        .map(|passport| Passport::from(passport))
+        .map(Passport::from)
         .filter(|passport| passport.is_valid())
         .count();
 
@@ -26,7 +26,7 @@ fn day_4_a(passports: &str) -> Result<usize> {
 fn day_4_b(passports: &str) -> Result<usize> {
     let valid = passports
         .split("\n\n")
-        .map(|passport| Passport::from(passport))
+        .map(Passport::from)
         .filter(|passport| passport.is_extra_valid())
         .count();
 
