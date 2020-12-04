@@ -14,7 +14,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn day_2_a(input: &String) -> Result<usize> {
+fn day_2_a(input: &str) -> Result<usize> {
     let valid = input
         .lines()
         .map(|line| parse_and_check_a(line))
@@ -24,7 +24,7 @@ fn day_2_a(input: &String) -> Result<usize> {
     Ok(valid)
 }
 
-fn day_2_b(input: &String) -> Result<usize> {
+fn day_2_b(input: &str) -> Result<usize> {
     let valid = input
         .lines()
         .map(|line| parse_and_check_b(line))
