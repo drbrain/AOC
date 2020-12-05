@@ -2,21 +2,83 @@ use anyhow::Result;
 
 use aoc2020::read;
 
-use std::cmp::Ordering::Less;
 use std::cmp::Ordering::Equal;
 use std::cmp::Ordering::Greater;
+use std::cmp::Ordering::Less;
 
 fn main() -> Result<()> {
     let input = read("./05.input")?;
 
     println!("part A: {}", day_5_a(&input));
-    //println!("part B: {}", day_5_b(&input)?);
+    println!("part B: {}", day_5_b(&input));
 
     Ok(())
 }
 
 fn day_5_a(input: &str) -> usize {
     input.split('\n').map(|path| seat_id(path)).max().unwrap()
+}
+
+fn day_5_b(boarding_passes: &str) -> usize {
+    let mut plane = Plane::new(128, 8);
+
+    plane.fill_seats(boarding_passes);
+
+    plane.empty_seat_id()
+}
+
+#[derive(Debug)]
+struct Plane {
+    seats: Vec<Vec<bool>>,
+}
+
+impl Plane {
+    fn new(row_count: usize, seat_count: usize) -> Self {
+        let mut seats = Vec::with_capacity(row_count);
+
+        for _ in 0..row_count {
+            seats.push(vec![false; seat_count]);
+        }
+
+        Plane { seats }
+    }
+
+    fn empty_seat_id(&self) -> usize {
+        let mut filled_seen = false;
+        for (row_id, seats) in self.seats.iter().enumerate() {
+            for (seat_id, filled) in seats.iter().enumerate() {
+                match (filled_seen, *filled) {
+                    (true, true) => {
+                        continue;
+                    }
+                    (true, false) => {
+                        return row_id * 8 + seat_id;
+                    }
+                    (false, true) => {
+                        filled_seen = true;
+                    }
+                    (false, false) => {}
+                }
+            }
+        }
+
+        unreachable!("how did I get here‽");
+    }
+
+    fn fill_seats(&mut self, boarding_passes: &str) {
+        boarding_passes
+            .split('\n')
+            .map(|path| seat_coordinates(path))
+            .map(|(row, seat)| self.seats[row][seat] = true)
+            .last();
+    }
+}
+
+fn seat_coordinates(path: &str) -> (usize, usize) {
+    let row_path = &path[0..7];
+    let seat_path = &path[7..10];
+
+    (find_row(row_path), find_seat(seat_path))
 }
 
 fn seat_id(path: &str) -> usize {
@@ -34,13 +96,14 @@ fn collection(size: usize) -> Vec<usize> {
     }
 
     collection
-
 }
 
 fn find(collection: Vec<usize>, path: &str, less: char) -> usize {
     let mut by = path.chars().map(|c| if c == less { Less } else { Greater });
 
-    collection.binary_search_by(|_| by.next().unwrap_or(Equal)).unwrap()
+    collection
+        .binary_search_by(|_| by.next().unwrap_or(Equal))
+        .unwrap()
 }
 
 fn rows() -> Vec<usize> {
@@ -96,5 +159,4 @@ BBFFBBFRLL";
 
         assert_eq!(820, day_5_a(input));
     }
-
 }
