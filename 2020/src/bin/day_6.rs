@@ -14,10 +14,8 @@ fn main() -> Result<()> {
 }
 
 fn day_6_a(answers: &str) -> usize {
-    let groups: Vec<&str> = answers.split("\n\n").collect();
-
-    groups
-        .iter()
+    answers
+        .split("\n\n")
         .map(|group| {
             group
                 .chars()
