@@ -95,13 +95,10 @@ fn bags_inside(tree: &HashMap<String, Vec<Inside>>, color: &str) -> usize {
 }
 
 fn count_direct(tree: &HashMap<String, Vec<String>>, color: &str, found: &mut HashSet<String>) {
-    match tree.get(color) {
-        Some(containers) => {
-            for color in containers {
-                found.insert(color.to_string());
-            }
+    if let Some(containers) = tree.get(color) {
+        for color in containers {
+            found.insert(color.to_string());
         }
-        None => (),
     }
 }
 
@@ -124,7 +121,7 @@ fn count_indirect(tree: &HashMap<String, Vec<String>>, color: &str, found: &mut 
 
 impl From<&str> for Rules {
     fn from(rules: &str) -> Self {
-        let rules: Vec<Rule> = rules.lines().map(|rule| Rule::from(rule)).collect();
+        let rules: Vec<Rule> = rules.lines().map(Rule::from).collect();
 
         Rules { rules }
     }
@@ -142,8 +139,8 @@ impl From<&str> for Rule {
 
         let inside: Vec<Inside> = split[1]
             .split(", ")
-            .map(|bag| bag.splitn(2, " bag").nth(0).unwrap())
-            .map(|bag| Inside::from(bag))
+            .map(|bag| bag.splitn(2, " bag").next().unwrap())
+            .map(Inside::from)
             .collect();
 
         let bag = split[0].to_string();
@@ -160,7 +157,7 @@ struct Inside {
 
 impl From<&str> for Inside {
     fn from(bag: &str) -> Self {
-        let bag: Vec<&str> = bag.splitn(2, " ").collect();
+        let bag: Vec<&str> = bag.splitn(2, ' ').collect();
 
         let count = match bag[0] {
             "no" => 0,
