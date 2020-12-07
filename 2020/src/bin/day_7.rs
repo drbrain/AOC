@@ -10,7 +10,7 @@ fn main() -> Result<()> {
     let input = read("./07.input")?;
 
     println!("part A: {}", day_7_a(&input));
-    //println!("part B: {}", day_7_b(&input));
+    println!("part B: {}", day_7_b(&input));
 
     Ok(())
 }
@@ -21,6 +21,12 @@ fn day_7_a(rules: &str) -> usize {
     rules.count_contains("shiny gold")
 }
 
+fn day_7_b(rules: &str) -> usize {
+    let rules = Rules::from(rules);
+
+    rules.count_nesting("shiny gold")
+}
+
 #[derive(Debug)]
 struct Rules {
     rules: Vec<Rule>,
@@ -28,7 +34,7 @@ struct Rules {
 
 impl Rules {
     fn count_contains(&self, color: &str) -> usize {
-        let tree = self.build_tree();
+        let tree = self.build_contains_tree();
 
         let mut found = HashSet::new();
 
@@ -40,15 +46,21 @@ impl Rules {
         found.len()
     }
 
-    fn build_tree(&self) -> HashMap<String, Vec<String>> {
+    fn count_nesting(&self, color: &str) -> usize {
+        let tree = self.build_nesting_tree();
+
+        bags_inside(&tree, color) - 1
+    }
+
+    fn build_contains_tree(&self) -> HashMap<String, Vec<String>> {
         let mut tree: HashMap<String, Vec<String>> = HashMap::new();
 
         for rule in &self.rules {
             for inside in &rule.inside {
-                match tree.get_mut(&inside.bag) {
+                match tree.get_mut(&inside.color) {
                     Some(bags) => bags.push(rule.bag.clone()),
                     None => {
-                        tree.insert(inside.bag.clone(), vec![rule.bag.clone()]);
+                        tree.insert(inside.color.clone(), vec![rule.bag.clone()]);
                     }
                 }
             }
@@ -56,6 +68,30 @@ impl Rules {
 
         tree
     }
+
+    fn build_nesting_tree(&self) -> HashMap<String, Vec<Inside>> {
+        let mut tree: HashMap<String, Vec<Inside>> = HashMap::new();
+
+        for rule in &self.rules {
+            tree.insert(rule.bag.clone(), rule.inside.clone());
+        }
+
+        tree
+    }
+}
+
+fn bags_inside(tree: &HashMap<String, Vec<Inside>>, color: &str) -> usize {
+    let bags = match tree.get(color) {
+        Some(bags) => {
+            bags.iter()
+                .map(|b| b.count * bags_inside(tree, &b.color))
+                .sum::<usize>()
+                + 1
+        }
+        None => 0,
+    };
+
+    bags
 }
 
 fn count_direct(tree: &HashMap<String, Vec<String>>, color: &str, found: &mut HashSet<String>) {
@@ -64,7 +100,7 @@ fn count_direct(tree: &HashMap<String, Vec<String>>, color: &str, found: &mut Ha
             for color in containers {
                 found.insert(color.to_string());
             }
-        },
+        }
         None => (),
     }
 }
@@ -77,10 +113,10 @@ fn count_indirect(tree: &HashMap<String, Vec<String>>, color: &str, found: &mut 
             for color in containers {
                 count_indirect(tree, &color, found);
             }
-        },
+        }
         None => {
             found.insert(color.to_string());
-        },
+        }
     };
 
     found
@@ -94,7 +130,7 @@ impl From<&str> for Rules {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Rule {
     bag: String,
     inside: Vec<Inside>,
@@ -116,10 +152,10 @@ impl From<&str> for Rule {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Inside {
     count: usize,
-    bag: String,
+    color: String,
 }
 
 impl From<&str> for Inside {
@@ -131,9 +167,9 @@ impl From<&str> for Inside {
             _ => bag[0].parse::<usize>().unwrap(),
         };
 
-        let bag = bag[1].to_string();
+        let color = bag[1].to_string();
 
-        Inside { count, bag }
+        Inside { count, color }
     }
 }
 
@@ -178,5 +214,30 @@ dotted black bags contain no other bags.";
         assert_eq!(5, rules.count_contains("dark olive"));
         assert_eq!(0, rules.count_contains("dark orange"));
         assert_eq!(0, rules.count_contains("light red"));
+    }
+
+    #[test]
+    fn test_day_7_b() {
+        let input = "light red bags contain 1 bright white bag, 2 muted yellow bags.
+dark orange bags contain 3 bright white bags, 4 muted yellow bags.
+bright white bags contain 1 shiny gold bag.
+muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
+shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
+dark olive bags contain 3 faded blue bags, 4 dotted black bags.
+vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+faded blue bags contain no other bags.
+dotted black bags contain no other bags.";
+
+        assert_eq!(32, day_7_b(input));
+
+        let input = "shiny gold bags contain 2 dark red bags.
+dark red bags contain 2 dark orange bags.
+dark orange bags contain 2 dark yellow bags.
+dark yellow bags contain 2 dark green bags.
+dark green bags contain 2 dark blue bags.
+dark blue bags contain 2 dark violet bags.
+dark violet bags contain no other bags.";
+
+        assert_eq!(126, day_7_b(input));
     }
 }
