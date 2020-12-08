@@ -43,7 +43,7 @@ fn day_8_b(instructions: &str) -> i32 {
         }
     }
 
-    0
+    unreachable!("Could not find an instruction sequence that completes")
 }
 
 #[derive(Debug)]
