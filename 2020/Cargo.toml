@@ -23,3 +23,4 @@ path = "src/bin/day_6.rs"
 [dependencies]
 anyhow    = "^1.0"
 itertools = "^0.9"
+nom       = "^6.0"
