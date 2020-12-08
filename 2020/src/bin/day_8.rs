@@ -38,11 +38,8 @@ fn day_8_b(instructions: &str) -> i32 {
     for instructions in mutator {
         let mut machine = Machine::new(instructions);
 
-        match machine.run() {
-            Ok(acc) => {
-                return acc;
-            }
-            Err(_) => (),
+        if let Ok(acc) = machine.run() {
+            return acc;
         }
     }
 
@@ -225,15 +222,15 @@ fn instruction(input: &str) -> IResult<&str, Instruction> {
 }
 
 fn acc(input: &str) -> IResult<&str, Instruction> {
-    map(preceded(tag("acc "), number), |n: i32| Instruction::Acc(n))(input)
+    map(preceded(tag("acc "), number), Instruction::Acc)(input)
 }
 
 fn jmp(input: &str) -> IResult<&str, Instruction> {
-    map(preceded(tag("jmp "), number), |n: i32| Instruction::Jmp(n))(input)
+    map(preceded(tag("jmp "), number), Instruction::Jmp)(input)
 }
 
 fn nop(input: &str) -> IResult<&str, Instruction> {
-    map(preceded(tag("nop "), number), |n: i32| Instruction::Nop(n))(input)
+    map(preceded(tag("nop "), number), Instruction::Nop)(input)
 }
 
 fn number(input: &str) -> IResult<&str, i32> {
