@@ -12,12 +12,13 @@ use nom::IResult;
 
 use std::collections::HashSet;
 use std::convert::From;
+use std::fmt;
 
 fn main() -> Result<()> {
     let input = read("./08.input")?;
 
     println!("part A: {}", day_8_a(&input));
-    //println!("part B: {}", day_8_b(&input));
+    println!("part B: {}", day_8_b(&input));
 
     Ok(())
 }
@@ -30,13 +31,23 @@ fn day_8_a(instructions: &str) -> i32 {
     machine.run().err().unwrap()
 }
 
-//fn day_8_b(instructions: &str) -> i32 {
-//    let instructions = Instructions::from(instructions);
-//
-//    let mut machine = Machine::new(instructions);
-//
-//    machine.fix_corrupt()
-//}
+fn day_8_b(instructions: &str) -> i32 {
+    let instructions = Instructions::from(instructions);
+    let mutator = InstructionMutator::new(instructions);
+
+    for instructions in mutator {
+        let mut machine = Machine::new(instructions);
+
+        match machine.run() {
+            Ok(acc) => {
+                return acc;
+            }
+            Err(_) => (),
+        }
+    }
+
+    0
+}
 
 #[derive(Debug)]
 struct Machine {
@@ -60,7 +71,9 @@ impl Machine {
     fn execute(&mut self) -> Result<(), String> {
         let instruction = match self.instructions.at(self.pc) {
             Some(i) => i,
-            None => { return Err(format!("PC overflow, pc: {} acc: {}", self.pc, self.acc)); },
+            None => {
+                return Err(format!("PC overflow, pc: {} acc: {}", self.pc, self.acc));
+            }
         };
 
         match instruction {
@@ -91,13 +104,54 @@ impl Machine {
 
             match self.execute() {
                 Ok(_) => (),
-                Err(_) => { return Ok(self.acc); },
+                Err(_) => {
+                    return Ok(self.acc);
+                }
             }
         }
     }
 }
 
 #[derive(Debug)]
+struct InstructionMutator {
+    instructions: Instructions,
+    max: usize,
+    pc: usize,
+}
+
+impl InstructionMutator {
+    fn new(instructions: Instructions) -> Self {
+        let max = instructions.len();
+        let pc = 0;
+
+        InstructionMutator {
+            instructions,
+            max,
+            pc,
+        }
+    }
+}
+
+impl Iterator for InstructionMutator {
+    type Item = Instructions;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pc == self.max {
+            return None;
+        }
+
+        self.instructions.swap(self.pc);
+
+        let instructions = self.instructions.clone();
+
+        self.instructions.swap(self.pc);
+        self.pc += 1;
+
+        Some(instructions)
+    }
+}
+
+#[derive(Clone, Debug)]
 struct Instructions {
     instructions: Vec<Instruction>,
 }
@@ -110,6 +164,20 @@ impl Instructions {
             None
         }
     }
+
+    fn len(&self) -> usize {
+        self.instructions.len()
+    }
+
+    fn swap(&mut self, pc: usize) {
+        match self.instructions[pc] {
+            Instruction::Acc(_) => (),
+            _ => {
+                let instruction = self.instructions.remove(pc).swap();
+                self.instructions.insert(pc, instruction);
+            }
+        }
+    }
 }
 
 impl From<&str> for Instructions {
@@ -118,11 +186,31 @@ impl From<&str> for Instructions {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone)]
 enum Instruction {
     Nop(i32),
     Acc(i32),
     Jmp(i32),
+}
+
+impl Instruction {
+    fn swap(self) -> Self {
+        match self {
+            Instruction::Jmp(n) => Instruction::Nop(n),
+            Instruction::Nop(n) => Instruction::Jmp(n),
+            Instruction::Acc(_) => unreachable!(),
+        }
+    }
+}
+
+impl fmt::Debug for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Instruction::Acc(n) => f.write_fmt(format_args!("acc {:+}", n)),
+            Instruction::Jmp(n) => f.write_fmt(format_args!("jmp {:+}", n)),
+            Instruction::Nop(n) => f.write_fmt(format_args!("nop {:+}", n)),
+        }
+    }
 }
 
 fn instructions(input: &str) -> IResult<&str, Instructions> {
@@ -173,18 +261,18 @@ acc +6";
         assert_eq!(5, day_8_a(input));
     }
 
-//    #[test]
-//    fn test_day_8_b() {
-//        let input = "nop +0
-//acc +1
-//jmp +4
-//acc +3
-//jmp -3
-//acc -99
-//acc +1
-//jmp -4
-//acc +6";
-//
-//        assert_eq!(8, day_8_b(input));
-//    }
+    #[test]
+    fn test_day_8_b() {
+        let input = "nop +0
+acc +1
+jmp +4
+acc +3
+jmp -3
+acc -99
+acc +1
+jmp -4
+acc +6";
+
+        assert_eq!(8, day_8_b(input));
+    }
 }
