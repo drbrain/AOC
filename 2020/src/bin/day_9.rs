@@ -28,7 +28,7 @@ fn day_9_b(input: &str) -> u64 {
     continuous_sum(incorrect, &numbers)
 }
 
-fn continuous_sum(incorrect: u64, numbers: &Vec<u64>) -> u64 {
+fn continuous_sum(incorrect: u64, numbers: &[u64]) -> u64 {
     let max = numbers.iter().position(|n| *n == incorrect).unwrap();
     let set = numbers[0..max].to_vec();
 
@@ -37,8 +37,8 @@ fn continuous_sum(incorrect: u64, numbers: &Vec<u64>) -> u64 {
         .unwrap()
 }
 
-fn subsets_of(count: usize, set: &Vec<u64>) -> Subsets {
-    let set = set.clone();
+fn subsets_of(count: usize, set: &[u64]) -> Subsets {
+    let set = set.to_owned();
     let size = set.len();
     let offset = 0;
 
@@ -88,7 +88,7 @@ fn sum_matches(set: Vec<u64>, target: u64) -> Option<u64> {
     }
 }
 
-fn incorrect(range_max: usize, numbers: &Vec<u64>) -> Option<u64> {
+fn incorrect(range_max: usize, numbers: &[u64]) -> Option<u64> {
     for max in range_max..numbers.len() {
         if valid(range_max, &numbers[0..max + 1].to_vec()) {
             continue;
@@ -100,7 +100,7 @@ fn incorrect(range_max: usize, numbers: &Vec<u64>) -> Option<u64> {
     None
 }
 
-fn valid(range_max: usize, numbers: &Vec<u64>) -> bool {
+fn valid(range_max: usize, numbers: &[u64]) -> bool {
     let target = *numbers.last().unwrap();
 
     let max = range_max.max(numbers.len()) - 1;
@@ -109,7 +109,7 @@ fn valid(range_max: usize, numbers: &Vec<u64>) -> bool {
     numbers[min..max]
         .iter()
         .combinations(2)
-        .any(|pair| pair.iter().map(|n| *n).sum::<u64>() == target)
+        .any(|pair| pair.iter().copied().sum::<u64>() == target)
 }
 
 fn numbers(input: &str) -> Vec<u64> {
