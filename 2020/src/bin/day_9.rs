@@ -5,6 +5,8 @@ use aoc2020::read;
 use itertools::Itertools;
 use itertools::MinMaxResult;
 
+use std::cmp::Ordering;
+
 fn main() -> Result<()> {
     let input = read("./09.input")?;
 
@@ -29,62 +31,28 @@ fn day_9_b(input: &str) -> u64 {
 }
 
 fn continuous_sum(incorrect: u64, numbers: &[u64]) -> u64 {
-    let max = numbers.iter().position(|n| *n == incorrect).unwrap();
-    let set = numbers[0..max].to_vec();
+    let max = numbers.len();
+    let mut near = 0;
+    let mut far = 1;
 
-    (2..max)
-        .find_map(|c| subsets_of(c, &set).find_map(|set| sum_matches(set, incorrect)))
-        .unwrap()
-}
+    while near < max && far < max {
+        let slice = &numbers[near..far];
+        let sum = slice.iter().sum::<u64>();
 
-fn subsets_of(count: usize, set: &[u64]) -> Subsets {
-    let set = set.to_owned();
-    let size = set.len();
-    let offset = 0;
-
-    Subsets {
-        set,
-        size,
-        count,
-        offset,
-    }
-}
-
-struct Subsets {
-    set: Vec<u64>,
-    size: usize,
-    count: usize,
-
-    offset: usize,
-}
-
-impl Iterator for Subsets {
-    type Item = Vec<u64>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let min = self.offset;
-        let max = min + self.count;
-
-        if max > self.size {
-            return None;
+        match incorrect.cmp(&sum) {
+            Ordering::Equal => { return minmax_sum(slice); },
+            Ordering::Less => { near += 1; },
+            Ordering::Greater => { far += 1; },
         }
-
-        self.offset += 1;
-
-        Some(self.set[min..max].to_vec())
     }
+
+    unreachable!();
 }
 
-fn sum_matches(set: Vec<u64>, target: u64) -> Option<u64> {
-    let sum = set.iter().sum::<u64>();
-
-    if sum == target {
-        match set.iter().minmax() {
-            MinMaxResult::MinMax(min, max) => Some(min + max),
-            _ => None,
-        }
-    } else {
-        None
+fn minmax_sum(set: &[u64]) -> u64 {
+    match set.iter().minmax() {
+        MinMaxResult::MinMax(min, max) => min + max,
+        _ => unreachable!(),
     }
 }
 
