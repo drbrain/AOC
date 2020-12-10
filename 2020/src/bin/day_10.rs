@@ -5,6 +5,8 @@ use aoc2020::read;
 
 use itertools::Itertools;
 
+use std::collections::HashMap;
+
 fn main() -> Result<()> {
     let input = read("./10.input")?;
 
@@ -26,7 +28,9 @@ fn day_10_b(input: &str) -> usize {
 
     let sequence = joltage_sequence(&adapters);
 
-    valid_sequences(&sequence, 0)
+    let mut cache: HashMap<(u64, usize, u64), usize> = HashMap::new();
+
+    valid_sequences(&sequence, 0, &mut cache)
 }
 
 fn joltage_differences(adapters: &[u64]) -> Result<(u64, u64, u64)> {
@@ -76,31 +80,52 @@ fn joltage_differences(adapters: &[u64]) -> Result<(u64, u64, u64)> {
 // (0),       3, 4, 7,       10, 11, 14, 17,         20, 23,     25, 28, 31,         34, 35, 38, 39, 42, 45,     47, 48, 49, (52)
 // (0),       3, 4, 7,       10, 11, 14, 17,         20, 23,     25, 28, 31,         34, 35, 38, 39, 42, 45,     47,     49, (52)
 // (0),       3, 4, 7,       10, 11, 14, 17,         20, 23,     25, 28, 31,         34, 35, 38, 39, 42, 45,         48, 49, (52)
-fn valid_sequences(sequence: &Vec<u64>, first: usize) -> usize {
+fn valid_sequences(
+    sequence: &Vec<u64>,
+    first: usize,
+    cache: &mut HashMap<(u64, usize, u64), usize>,
+) -> usize {
     let len = sequence.len();
     let mut valid = 1;
 
-    for i in first..len - 1 {
-        let a = sequence[i];
+    for i in (first..len - 1).rev() {
+        let value = sequence[i];
 
-        if i + 2 < len && sequence[i + 2] - a == 2 {
-            let mut alternate = sequence.clone();
-            alternate.remove(i + 1);
-
-            valid += valid_sequences(&alternate, i);
+        if i + 2 < len && sequence[i + 2] - value == 2 {
+            valid += validate(sequence, value, i, 1, cache);
         }
 
-        if i + 3 < len && sequence[i + 3] - a == 3 {
-            let mut alternate = sequence.clone();
-
-            alternate.remove(i + 1);
-            alternate.remove(i + 1);
-
-            valid += valid_sequences(&alternate, i);
+        if i + 3 < len && sequence[i + 3] - value == 3 {
+            valid += validate(sequence, value, i, 2, cache);
         }
     }
 
     valid
+}
+
+fn validate(
+    sequence: &Vec<u64>,
+    value: u64,
+    last: usize,
+    to_remove: u64,
+    cache: &mut HashMap<(u64, usize, u64), usize>,
+) -> usize {
+    let key = (value, last, to_remove);
+
+    match cache.get(&key) {
+        Some(v) => *v,
+        None => {
+            let mut alternate = sequence.clone();
+            for _ in 0..to_remove {
+                alternate.remove(last + 1);
+            }
+
+            let result = valid_sequences(&alternate, last, cache);
+            cache.insert(key, result);
+
+            result
+        }
+    }
 }
 
 fn joltage_sequence(adapters: &[u64]) -> Vec<u64> {
@@ -208,15 +233,17 @@ mod test {
     #[test]
     fn test_day_10_valid_sequences() {
         let adapters = vec![0, 1, 4, 5, 6, 7, 10, 11, 12, 15, 16, 19, 22];
+        let mut cache: HashMap<(u64, usize, u64), usize> = HashMap::new();
 
-        assert_eq!(8, valid_sequences(&adapters, 0));
+        assert_eq!(8, valid_sequences(&adapters, 0, &mut cache));
 
         let adapters = vec![
             0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 17, 18, 19, 20, 23, 24, 25, 28, 31, 32, 33, 34, 35,
             38, 39, 42, 45, 46, 47, 48, 49, 52,
         ];
+        let mut cache: HashMap<(u64, usize, u64), usize> = HashMap::new();
 
-        assert_eq!(19208, valid_sequences(&adapters, 0));
+        assert_eq!(19208, valid_sequences(&adapters, 0, &mut cache));
     }
 
     #[test]
