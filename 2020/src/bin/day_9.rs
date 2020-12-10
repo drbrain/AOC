@@ -40,9 +40,15 @@ fn continuous_sum(incorrect: u64, numbers: &[u64]) -> u64 {
         let sum = slice.iter().sum::<u64>();
 
         match incorrect.cmp(&sum) {
-            Ordering::Equal => { return minmax_sum(slice); },
-            Ordering::Less => { near += 1; },
-            Ordering::Greater => { far += 1; },
+            Ordering::Equal => {
+                return minmax_sum(slice);
+            }
+            Ordering::Less => {
+                near += 1;
+            }
+            Ordering::Greater => {
+                far += 1;
+            }
         }
     }
 
