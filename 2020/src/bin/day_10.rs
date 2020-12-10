@@ -81,7 +81,7 @@ fn joltage_differences(adapters: &[u64]) -> Result<(u64, u64, u64)> {
 // (0),       3, 4, 7,       10, 11, 14, 17,         20, 23,     25, 28, 31,         34, 35, 38, 39, 42, 45,     47,     49, (52)
 // (0),       3, 4, 7,       10, 11, 14, 17,         20, 23,     25, 28, 31,         34, 35, 38, 39, 42, 45,         48, 49, (52)
 fn valid_sequences(
-    sequence: &Vec<u64>,
+    sequence: &[u64],
     first: usize,
     cache: &mut HashMap<(u64, usize, u64), usize>,
 ) -> usize {
@@ -104,7 +104,7 @@ fn valid_sequences(
 }
 
 fn validate(
-    sequence: &Vec<u64>,
+    sequence: &[u64],
     value: u64,
     last: usize,
     to_remove: u64,
@@ -115,7 +115,7 @@ fn validate(
     match cache.get(&key) {
         Some(v) => *v,
         None => {
-            let mut alternate = sequence.clone();
+            let mut alternate = sequence.to_owned();
             for _ in 0..to_remove {
                 alternate.remove(last + 1);
             }
