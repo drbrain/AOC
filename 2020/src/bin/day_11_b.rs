@@ -161,7 +161,7 @@ struct SeatIter<'a> {
 }
 
 impl SeatIter<'_> {
-    fn new<'a>(layout: &'a Layout) -> SeatIter<'a> {
+    fn new(layout: &Layout) -> SeatIter {
         let row_max = layout.seats.len();
         let col_max = layout.seats[0].len();
         let row = 0;
