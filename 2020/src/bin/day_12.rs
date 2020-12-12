@@ -18,7 +18,7 @@ fn main() -> Result<()> {
     let input = read("./12.input")?;
 
     println!("part A: {}", day_12_a(&input));
-    //println!("part B: {}", day_12_b(&input));
+    println!("part B: {}", day_12_b(&input));
 
     Ok(())
 }
@@ -28,7 +28,17 @@ fn day_12_a(input: &str) -> i32 {
 
     let mut ship = Ship::default();
 
-    ship.navigate(&actions);
+    ship.navigate_wrong(&actions);
+
+    ship.manhattan()
+}
+
+fn day_12_b(input: &str) -> i32 {
+    let actions = actions(input).unwrap().1;
+
+    let mut ship = Ship::default();
+
+    ship.navigate_waypoint(&actions);
 
     ship.manhattan()
 }
@@ -36,6 +46,7 @@ fn day_12_a(input: &str) -> i32 {
 #[derive(Clone, Eq, PartialEq)]
 struct Ship {
     facing: Direction,
+    waypoint: Waypoint,
     n: i32,
     e: i32,
 }
@@ -44,20 +55,41 @@ impl Ship {
     fn default() -> Self {
         Ship {
             facing: Direction::E,
+            waypoint: Waypoint::default(),
             n: 0,
             e: 0,
         }
     }
 
-    fn new(facing: Direction, n: i32, e: i32) -> Self {
-        Ship { facing, n, e }
+    #[allow(dead_code)]
+    fn new(facing: Direction, waypoint: Waypoint, n: i32, e: i32) -> Self {
+        Ship {
+            facing,
+            waypoint,
+            n,
+            e,
+        }
     }
 
     fn manhattan(&self) -> i32 {
         self.n.abs() + self.e.abs()
     }
 
-    fn navigate(&mut self, actions: &Vec<Action>) {
+    fn navigate_waypoint(&mut self, actions: &Vec<Action>) {
+        for action in actions {
+            match action {
+                Action::N(v) => self.move_waypoint(action.into(), *v),
+                Action::S(v) => self.move_waypoint(action.into(), *v),
+                Action::E(v) => self.move_waypoint(action.into(), *v),
+                Action::W(v) => self.move_waypoint(action.into(), *v),
+                Action::F(v) => self.move_to_waypoint(*v),
+                Action::L(v) => self.waypoint.rotate(action.into(), *v),
+                Action::R(v) => self.waypoint.rotate(action.into(), *v),
+            }
+        }
+    }
+
+    fn navigate_wrong(&mut self, actions: &Vec<Action>) {
         for action in actions {
             match action {
                 Action::N(v) => self.move_ship(action.into(), *v),
@@ -77,6 +109,20 @@ impl Ship {
             Direction::S => self.n -= units,
             Direction::E => self.e += units,
             Direction::W => self.e -= units,
+        }
+    }
+
+    fn move_to_waypoint(&mut self, times: i32) {
+        self.n += self.waypoint.n * times;
+        self.e += self.waypoint.e * times;
+    }
+
+    fn move_waypoint(&mut self, direction: Direction, units: i32) {
+        match direction {
+            Direction::N => self.waypoint.n += units,
+            Direction::S => self.waypoint.n -= units,
+            Direction::E => self.waypoint.e += units,
+            Direction::W => self.waypoint.e -= units,
         }
     }
 
@@ -101,6 +147,57 @@ impl fmt::Debug for Ship {
             "facing {} at {}N, {}E",
             facing, self.n, self.e
         ))
+    }
+}
+
+#[derive(Clone, Eq, PartialEq)]
+struct Waypoint {
+    n: i32,
+    e: i32,
+}
+
+impl Waypoint {
+    fn default() -> Waypoint {
+        Waypoint { n: 1, e: 10 }
+    }
+
+    #[allow(dead_code)]
+    fn new(n: i32, e: i32) -> Waypoint {
+        Waypoint { n, e }
+    }
+
+    fn rotate(&mut self, rotation: Rotation, degrees: i32) {
+        let degrees = match rotation {
+            Rotation::R => degrees,
+            Rotation::L => -degrees,
+        };
+
+        let turns = (4 + degrees / 90) % 4;
+
+        let n = self.n;
+        let e = self.e;
+
+        match turns {
+            1 => {
+                self.e = n;
+                self.n = -e
+            }
+            2 => {
+                self.e = -e;
+                self.n = -n
+            }
+            3 => {
+                self.e = -n;
+                self.n = e
+            }
+            _ => unreachable!("unhandled rotation {} turns from {:?}", turns, self),
+        }
+    }
+}
+
+impl fmt::Debug for Waypoint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_fmt(format_args!("{}N, {}E", self.n, self.e))
     }
 }
 
@@ -242,9 +339,6 @@ fn action(input: &str) -> IResult<&str, Action> {
 fn number(input: &str) -> IResult<&str, i32> {
     map(recognize(digit1), |s: &str| s.parse::<i32>().unwrap())(input)
 }
-//fn day_12_b(input: &str) -> usize {
-//    0
-//}
 
 #[cfg(test)]
 mod test {
@@ -281,17 +375,43 @@ F11";
     }
 
     #[test]
-    fn test_day_12_navigate() {
+    fn test_day_12_navigate_waypoint() {
         let mut ship = Ship::default();
 
-        ship.navigate(&vec![Action::E(5)]);
-        assert_eq!(Ship::new(Direction::E, 0, 5), ship);
+        ship.navigate_waypoint(&vec![Action::F(10)]);
+        assert_eq!(Ship::new(Direction::E, Waypoint::new(1, 10), 10, 100), ship);
 
-        ship.navigate(&vec![Action::R(90)]);
-        assert_eq!(Ship::new(Direction::S, 0, 5), ship);
+        ship.navigate_waypoint(&vec![Action::N(3)]);
+        assert_eq!(Ship::new(Direction::E, Waypoint::new(4, 10), 10, 100), ship);
 
-        ship.navigate(&vec![Action::E(5)]);
-        assert_eq!(Ship::new(Direction::S, 0, 10), ship);
+        ship.navigate_waypoint(&vec![Action::F(7)]);
+        assert_eq!(Ship::new(Direction::E, Waypoint::new(4, 10), 38, 170), ship);
+
+        ship.navigate_waypoint(&vec![Action::R(90)]);
+        assert_eq!(
+            Ship::new(Direction::E, Waypoint::new(-10, 4), 38, 170),
+            ship
+        );
+
+        ship.navigate_waypoint(&vec![Action::F(11)]);
+        assert_eq!(
+            Ship::new(Direction::E, Waypoint::new(-10, 4), -72, 214),
+            ship
+        );
+    }
+
+    #[test]
+    fn test_day_12_navigate_wrong() {
+        let mut ship = Ship::default();
+
+        ship.navigate_wrong(&vec![Action::E(5)]);
+        assert_eq!(Ship::new(Direction::E, Waypoint::default(), 0, 5), ship);
+
+        ship.navigate_wrong(&vec![Action::R(90)]);
+        assert_eq!(Ship::new(Direction::S, Waypoint::default(), 0, 5), ship);
+
+        ship.navigate_wrong(&vec![Action::E(5)]);
+        assert_eq!(Ship::new(Direction::S, Waypoint::default(), 0, 10), ship);
     }
 
     #[test]
