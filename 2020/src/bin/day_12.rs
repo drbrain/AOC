@@ -75,7 +75,7 @@ impl Ship {
         self.n.abs() + self.e.abs()
     }
 
-    fn navigate_waypoint(&mut self, actions: &Vec<Action>) {
+    fn navigate_waypoint(&mut self, actions: &[Action]) {
         for action in actions {
             match action {
                 Action::N(v) => self.move_waypoint(action.into(), *v),
@@ -89,7 +89,7 @@ impl Ship {
         }
     }
 
-    fn navigate_wrong(&mut self, actions: &Vec<Action>) {
+    fn navigate_wrong(&mut self, actions: &[Action]) {
         for action in actions {
             match action {
                 Action::N(v) => self.move_ship(action.into(), *v),
@@ -333,7 +333,7 @@ fn actions(input: &str) -> IResult<&str, Vec<Action>> {
 }
 
 fn action(input: &str) -> IResult<&str, Action> {
-    map(tuple((one_of("NSEWLRF"), number)), |t| Action::from(t))(input)
+    map(tuple((one_of("NSEWLRF"), number)), Action::from)(input)
 }
 
 fn number(input: &str) -> IResult<&str, i32> {
