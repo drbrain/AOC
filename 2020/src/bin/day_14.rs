@@ -166,10 +166,10 @@ impl From<&str> for Mask {
     fn from(input: &str) -> Mask {
         let len = input.len() - 1;
         let ones = input
-            .match_indices("1")
+            .match_indices('1')
             .fold(0, |mask, (i, _)| mask | 1 << (len - i));
         let zeros = input
-            .match_indices("0")
+            .match_indices('0')
             .fold(0, |mask, (i, _)| mask | 1 << (len - i));
         let xs = TRIM ^ (ones | zeros);
 
