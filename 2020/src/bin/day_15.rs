@@ -15,7 +15,7 @@ fn main() -> Result<()> {
     let input = read("./15.input")?;
 
     println!("part A: {}", day_15_a(&input));
-    //println!("part B: {}", day_15_b(&input));
+    println!("part B: {}", day_15_b(&input));
 
     Ok(())
 }
@@ -28,8 +28,13 @@ fn day_15_a(input: &str) -> u64 {
     *game.numbers.last().unwrap()
 }
 
-//fn day_15_b(input: &str) -> u64 {
-//}
+fn day_15_b(input: &str) -> u64 {
+    let mut game = MemoryGame::from(input);
+
+    game.play(30000000);
+
+    *game.numbers.last().unwrap()
+}
 
 #[derive(Debug)]
 struct MemoryGame {
@@ -104,6 +109,11 @@ mod test {
         let input = "0,3,6";
 
         assert_eq!(436, day_15_a(input));
+    }
+
+    #[test]
+    fn test_day_15_b() {
+        assert_eq!(175594, day_15_b("0,3,6"));
     }
 
     #[test]
