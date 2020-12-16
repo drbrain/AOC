@@ -56,43 +56,56 @@ fn validate(field: &u64, notes: &Vec<Note>) -> bool {
     notes.iter().any(|n| n.validate(field))
 }
 
-//#[derive(Debug)]
-//enum Note {
-//    DepartureLocation((Range<u64>, Range<u64>)),
-//    DepartureStation((Range<u64>, Range<u64>)),
-//    DeparturePlatform((Range<u64>, Range<u64>)),
-//    DepartureTrack((Range<u64>, Range<u64>)),
-//    DepartureDate((Range<u64>, Range<u64>)),
-//    DepartureTime((Range<u64>, Range<u64>)),
-//    ArrivalLocation((Range<u64>, Range<u64>)),
-//    ArrivalStation((Range<u64>, Range<u64>)),
-//    ArrivalPlatform((Range<u64>, Range<u64>)),
-//    ArrivalTrack((Range<u64>, Range<u64>)),
-//    Class((Range<u64>, Range<u64>)),
-//    Duration((Range<u64>, Range<u64>)),
-//    Price((Range<u64>, Range<u64>)),
-//    Route((Range<u64>, Range<u64>)),
-//    Row((Range<u64>, Range<u64>)),
-//    Seat((Range<u64>, Range<u64>)),
-//    Train((Range<u64>, Range<u64>)),
-//    Type((Range<u64>, Range<u64>)),
-//    Wagon((Range<u64>, Range<u64>)),
-//    Zone((Range<u64>, Range<u64>)),
-//}
-
 #[derive(Debug)]
-struct Note {
-    r1: Range<u64>,
-    r2: Range<u64>,
+enum Note {
+    DepartureLocation((Range<u64>, Range<u64>)),
+    DepartureStation((Range<u64>, Range<u64>)),
+    DeparturePlatform((Range<u64>, Range<u64>)),
+    DepartureTrack((Range<u64>, Range<u64>)),
+    DepartureDate((Range<u64>, Range<u64>)),
+    DepartureTime((Range<u64>, Range<u64>)),
+    ArrivalLocation((Range<u64>, Range<u64>)),
+    ArrivalStation((Range<u64>, Range<u64>)),
+    ArrivalPlatform((Range<u64>, Range<u64>)),
+    ArrivalTrack((Range<u64>, Range<u64>)),
+    Class((Range<u64>, Range<u64>)),
+    Duration((Range<u64>, Range<u64>)),
+    Price((Range<u64>, Range<u64>)),
+    Route((Range<u64>, Range<u64>)),
+    Row((Range<u64>, Range<u64>)),
+    Seat((Range<u64>, Range<u64>)),
+    Train((Range<u64>, Range<u64>)),
+    Type((Range<u64>, Range<u64>)),
+    Wagon((Range<u64>, Range<u64>)),
+    Zone((Range<u64>, Range<u64>)),
 }
 
 impl Note {
-    fn new((r1, r2): (Range<u64>, Range<u64>)) -> Note {
-        Note { r1, r2 }
-    }
-
     fn validate(&self, field: &u64) -> bool {
-        self.r1.contains(field) || self.r2.contains(field)
+        let (r1, r2) = match self {
+            Note::DepartureLocation((r1, r2)) => (r1, r2),
+            Note::DepartureStation((r1, r2)) => (r1, r2),
+            Note::DeparturePlatform((r1, r2)) => (r1, r2),
+            Note::DepartureTrack((r1, r2)) => (r1, r2),
+            Note::DepartureDate((r1, r2)) => (r1, r2),
+            Note::DepartureTime((r1, r2)) => (r1, r2),
+            Note::ArrivalLocation((r1, r2)) => (r1, r2),
+            Note::ArrivalStation((r1, r2)) => (r1, r2),
+            Note::ArrivalPlatform((r1, r2)) => (r1, r2),
+            Note::ArrivalTrack((r1, r2)) => (r1, r2),
+            Note::Class((r1, r2)) => (r1, r2),
+            Note::Duration((r1, r2)) => (r1, r2),
+            Note::Price((r1, r2)) => (r1, r2),
+            Note::Route((r1, r2)) => (r1, r2),
+            Note::Row((r1, r2)) => (r1, r2),
+            Note::Seat((r1, r2)) => (r1, r2),
+            Note::Train((r1, r2)) => (r1, r2),
+            Note::Type((r1, r2)) => (r1, r2),
+            Note::Wagon((r1, r2)) => (r1, r2),
+            Note::Zone((r1, r2)) => (r1, r2),
+        };
+
+        r1.contains(field) || r2.contains(field)
     }
 }
 
@@ -128,43 +141,43 @@ fn ticket(input: &str) -> IResult<&str, Ticket> {
 fn note(input: &str) -> IResult<&str, Note> {
     alt((
         map(preceded(tag("departure location: "), ranges), |rs| {
-            Note::new(rs)
+            Note::DepartureLocation(rs)
         }),
         map(preceded(tag("departure station: "), ranges), |rs| {
-            Note::new(rs)
+            Note::DepartureStation(rs)
         }),
         map(preceded(tag("departure platform: "), ranges), |rs| {
-            Note::new(rs)
+            Note::DeparturePlatform(rs)
         }),
         map(preceded(tag("departure track: "), ranges), |rs| {
-            Note::new(rs)
+            Note::DepartureTrack(rs)
         }),
         map(preceded(tag("departure date: "), ranges), |rs| {
-            Note::new(rs)
+            Note::DepartureDate(rs)
         }),
         map(preceded(tag("departure time: "), ranges), |rs| {
-            Note::new(rs)
+            Note::DepartureTime(rs)
         }),
         map(preceded(tag("arrival location: "), ranges), |rs| {
-            Note::new(rs)
+            Note::ArrivalLocation(rs)
         }),
         map(preceded(tag("arrival station: "), ranges), |rs| {
-            Note::new(rs)
+            Note::ArrivalStation(rs)
         }),
         map(preceded(tag("arrival platform: "), ranges), |rs| {
-            Note::new(rs)
+            Note::ArrivalPlatform(rs)
         }),
-        map(preceded(tag("arrival track: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("class: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("duration: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("price: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("route: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("row: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("seat: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("train: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("type: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("wagon: "), ranges), |rs| Note::new(rs)),
-        map(preceded(tag("zone: "), ranges), |rs| Note::new(rs)),
+        map(preceded(tag("arrival track: "), ranges), |rs| Note::ArrivalTrack(rs)),
+        map(preceded(tag("class: "), ranges), |rs| Note::Class(rs)),
+        map(preceded(tag("duration: "), ranges), |rs| Note::Duration(rs)),
+        map(preceded(tag("price: "), ranges), |rs| Note::Price(rs)),
+        map(preceded(tag("route: "), ranges), |rs| Note::Route(rs)),
+        map(preceded(tag("row: "), ranges), |rs| Note::Row(rs)),
+        map(preceded(tag("seat: "), ranges), |rs| Note::Seat(rs)),
+        map(preceded(tag("train: "), ranges), |rs| Note::Train(rs)),
+        map(preceded(tag("type: "), ranges), |rs| Note::Type(rs)),
+        map(preceded(tag("wagon: "), ranges), |rs| Note::Wagon(rs)),
+        map(preceded(tag("zone: "), ranges), |rs| Note::Zone(rs)),
     ))(input)
 }
 
