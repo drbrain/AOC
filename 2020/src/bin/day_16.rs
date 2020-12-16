@@ -2,6 +2,8 @@ use anyhow::Result;
 
 use aoc2020::read;
 
+use itertools::Itertools;
+
 use nom::branch::*;
 use nom::bytes::complete::*;
 use nom::character::complete::*;
@@ -10,13 +12,15 @@ use nom::multi::*;
 use nom::sequence::*;
 use nom::IResult;
 
+use std::collections::HashSet;
+use std::fmt;
 use std::ops::Range;
 
 fn main() -> Result<()> {
     let input = read("./16.input")?;
 
     println!("part A: {}", day_16_a(&input));
-    //println!("part B: {}", day_15_b(&input));
+    println!("part B: {}", day_16_b(&input));
 
     Ok(())
 }
@@ -56,7 +60,88 @@ fn validate(field: &u64, notes: &Vec<Note>) -> bool {
     notes.iter().any(|n| n.validate(field))
 }
 
-#[derive(Debug)]
+fn day_16_b(input: &str) -> u64 {
+    let (notes, ticket, nearby) = parse(input).unwrap().1;
+
+    let valid = valid(&nearby, &notes);
+
+    let positions = determine_positions(&valid, &notes);
+
+    departure_positions(&ticket, &positions).iter().product()
+}
+
+fn determine_positions(tickets: &Vec<Ticket>, notes: &Vec<Note>) -> Vec<(usize, Note)> {
+    let mut possibilities: Vec<Vec<&Note>> = Vec::with_capacity(notes.len());
+
+    for field in 0..tickets[0].fields.len() {
+        let ticket_fields = nth_field(tickets, field);
+
+        let matching: Vec<&Note> = notes
+            .iter()
+            .filter(|n| ticket_fields.iter().all(|f| n.validate(f)))
+            .collect();
+
+        possibilities.push(matching);
+    }
+
+    let possibilities: Vec<(usize, &Vec<&Note>)> = possibilities
+        .iter()
+        .enumerate()
+        .sorted_by(|(_, a), (_, b)| Ord::cmp(&a.len(), &b.len()))
+        .collect();
+
+    let mut seen: HashSet<&Note> = HashSet::new();
+    let mut positions: Vec<(usize, Note)> = Vec::with_capacity(notes.len());
+
+    for (i, possibility) in possibilities {
+        let remain: &Note = possibility
+            .iter()
+            .filter(|p| !seen.contains(*p))
+            .next()
+            .unwrap();
+
+        seen.insert(remain);
+
+        positions.push((i, remain.clone()));
+    }
+
+    positions
+}
+
+fn nth_field(tickets: &Vec<Ticket>, field: usize) -> Vec<u64> {
+    tickets.iter().map(|t| t.fields[field]).collect()
+}
+
+fn departure_positions(ticket: &Ticket, positions: &Vec<(usize, Note)>) -> Vec<u64> {
+    positions
+        .iter()
+        .filter_map(|(i, note)| match note {
+            Note::DepartureLocation(_) => Some(ticket.fields[*i]),
+            Note::DepartureStation(_) => Some(ticket.fields[*i]),
+            Note::DeparturePlatform(_) => Some(ticket.fields[*i]),
+            Note::DepartureTrack(_) => Some(ticket.fields[*i]),
+            Note::DepartureDate(_) => Some(ticket.fields[*i]),
+            Note::DepartureTime(_) => Some(ticket.fields[*i]),
+            _ => None,
+        })
+        .collect()
+}
+
+fn valid(tickets: &Vec<Ticket>, notes: &Vec<Note>) -> Vec<Ticket> {
+    tickets
+        .iter()
+        .filter_map(|ticket| find_valid(ticket, notes))
+        .collect()
+}
+
+fn find_valid(ticket: &Ticket, notes: &Vec<Note>) -> Option<Ticket> {
+    match ticket.fields.iter().all(|field| validate(field, notes)) {
+        true => Some(ticket.clone()),
+        false => None,
+    }
+}
+
+#[derive(Clone, Eq, Hash, PartialEq)]
 enum Note {
     DepartureLocation((Range<u64>, Range<u64>)),
     DepartureStation((Range<u64>, Range<u64>)),
@@ -109,7 +194,36 @@ impl Note {
     }
 }
 
-#[derive(Debug)]
+impl fmt::Debug for Note {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let symbol = match self {
+            Note::DepartureLocation(_) => "DLo",
+            Note::DepartureStation(_) => "DSt",
+            Note::DeparturePlatform(_) => "DPl",
+            Note::DepartureTrack(_) => "DTr",
+            Note::DepartureDate(_) => "DDa",
+            Note::DepartureTime(_) => "DTi",
+            Note::ArrivalLocation(_) => "ALo",
+            Note::ArrivalStation(_) => "ASt",
+            Note::ArrivalPlatform(_) => "APl",
+            Note::ArrivalTrack(_) => "ATr",
+            Note::Class(_) => "Cls",
+            Note::Duration(_) => "Dur",
+            Note::Price(_) => "Pri",
+            Note::Route(_) => "Rou",
+            Note::Row(_) => "Row",
+            Note::Seat(_) => "Sea",
+            Note::Train(_) => "Tra",
+            Note::Type(_) => "Typ",
+            Note::Wagon(_) => "Wag",
+            Note::Zone(_) => "Zon",
+        };
+
+        write!(f, "{}", symbol)
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct Ticket {
     fields: Vec<u64>,
 }
@@ -167,7 +281,9 @@ fn note(input: &str) -> IResult<&str, Note> {
         map(preceded(tag("arrival platform: "), ranges), |rs| {
             Note::ArrivalPlatform(rs)
         }),
-        map(preceded(tag("arrival track: "), ranges), |rs| Note::ArrivalTrack(rs)),
+        map(preceded(tag("arrival track: "), ranges), |rs| {
+            Note::ArrivalTrack(rs)
+        }),
         map(preceded(tag("class: "), ranges), |rs| Note::Class(rs)),
         map(preceded(tag("duration: "), ranges), |rs| Note::Duration(rs)),
         map(preceded(tag("price: "), ranges), |rs| Note::Price(rs)),
@@ -221,5 +337,30 @@ nearby tickets:
 38,6,12";
 
         assert_eq!(71, day_16_a(input));
+    }
+
+    #[test]
+    fn test_day_16_valid() {
+        let input = "class: 1-3 or 5-7
+row: 6-11 or 33-44
+seat: 13-40 or 45-50
+
+your ticket:
+7,1,14
+
+nearby tickets:
+7,3,47
+40,4,50
+55,2,20
+38,6,12";
+
+        let (notes, _, nearby) = parse(input).unwrap().1;
+
+        assert_eq!(
+            vec![Ticket {
+                fields: vec![7, 3, 47]
+            }],
+            valid(&nearby, &notes)
+        );
     }
 }
