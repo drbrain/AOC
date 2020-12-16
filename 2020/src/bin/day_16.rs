@@ -33,7 +33,7 @@ fn day_16_a(input: &str) -> u64 {
     invalid.iter().sum()
 }
 
-fn find_all_invalid(tickets: &Vec<Ticket>, notes: &Vec<Note>) -> Vec<u64> {
+fn find_all_invalid(tickets: &[Ticket], notes: &[Note]) -> Vec<u64> {
     tickets
         .iter()
         .filter_map(|ticket| find_invalid(ticket, notes))
@@ -41,7 +41,7 @@ fn find_all_invalid(tickets: &Vec<Ticket>, notes: &Vec<Note>) -> Vec<u64> {
         .collect()
 }
 
-fn find_invalid(ticket: &Ticket, notes: &Vec<Note>) -> Option<Vec<u64>> {
+fn find_invalid(ticket: &Ticket, notes: &[Note]) -> Option<Vec<u64>> {
     let invalid: Vec<u64> = ticket
         .fields
         .iter()
@@ -56,7 +56,7 @@ fn find_invalid(ticket: &Ticket, notes: &Vec<Note>) -> Option<Vec<u64>> {
     }
 }
 
-fn validate(field: &u64, notes: &Vec<Note>) -> bool {
+fn validate(field: &u64, notes: &[Note]) -> bool {
     notes.iter().any(|n| n.validate(field))
 }
 
@@ -70,7 +70,7 @@ fn day_16_b(input: &str) -> u64 {
     departure_positions(&ticket, &positions).iter().product()
 }
 
-fn determine_positions(tickets: &Vec<Ticket>, notes: &Vec<Note>) -> Vec<(usize, Note)> {
+fn determine_positions(tickets: &[Ticket], notes: &[Note]) -> Vec<(usize, Note)> {
     let mut possibilities: Vec<Vec<&Note>> = Vec::with_capacity(notes.len());
 
     for field in 0..tickets[0].fields.len() {
@@ -96,8 +96,7 @@ fn determine_positions(tickets: &Vec<Ticket>, notes: &Vec<Note>) -> Vec<(usize, 
     for (i, possibility) in possibilities {
         let remain: &Note = possibility
             .iter()
-            .filter(|p| !seen.contains(*p))
-            .next()
+            .find(|p| !seen.contains(*p))
             .unwrap();
 
         seen.insert(remain);
@@ -108,11 +107,11 @@ fn determine_positions(tickets: &Vec<Ticket>, notes: &Vec<Note>) -> Vec<(usize, 
     positions
 }
 
-fn nth_field(tickets: &Vec<Ticket>, field: usize) -> Vec<u64> {
+fn nth_field(tickets: &[Ticket], field: usize) -> Vec<u64> {
     tickets.iter().map(|t| t.fields[field]).collect()
 }
 
-fn departure_positions(ticket: &Ticket, positions: &Vec<(usize, Note)>) -> Vec<u64> {
+fn departure_positions(ticket: &Ticket, positions: &[(usize, Note)]) -> Vec<u64> {
     positions
         .iter()
         .filter_map(|(i, note)| match note {
@@ -127,14 +126,14 @@ fn departure_positions(ticket: &Ticket, positions: &Vec<(usize, Note)>) -> Vec<u
         .collect()
 }
 
-fn valid(tickets: &Vec<Ticket>, notes: &Vec<Note>) -> Vec<Ticket> {
+fn valid(tickets: &[Ticket], notes: &[Note]) -> Vec<Ticket> {
     tickets
         .iter()
         .filter_map(|ticket| find_valid(ticket, notes))
         .collect()
 }
 
-fn find_valid(ticket: &Ticket, notes: &Vec<Note>) -> Option<Ticket> {
+fn find_valid(ticket: &Ticket, notes: &[Note]) -> Option<Ticket> {
     match ticket.fields.iter().all(|field| validate(field, notes)) {
         true => Some(ticket.clone()),
         false => None,
@@ -254,46 +253,53 @@ fn ticket(input: &str) -> IResult<&str, Ticket> {
 
 fn note(input: &str) -> IResult<&str, Note> {
     alt((
-        map(preceded(tag("departure location: "), ranges), |rs| {
-            Note::DepartureLocation(rs)
-        }),
-        map(preceded(tag("departure station: "), ranges), |rs| {
-            Note::DepartureStation(rs)
-        }),
-        map(preceded(tag("departure platform: "), ranges), |rs| {
-            Note::DeparturePlatform(rs)
-        }),
-        map(preceded(tag("departure track: "), ranges), |rs| {
-            Note::DepartureTrack(rs)
-        }),
-        map(preceded(tag("departure date: "), ranges), |rs| {
-            Note::DepartureDate(rs)
-        }),
-        map(preceded(tag("departure time: "), ranges), |rs| {
-            Note::DepartureTime(rs)
-        }),
-        map(preceded(tag("arrival location: "), ranges), |rs| {
-            Note::ArrivalLocation(rs)
-        }),
-        map(preceded(tag("arrival station: "), ranges), |rs| {
-            Note::ArrivalStation(rs)
-        }),
-        map(preceded(tag("arrival platform: "), ranges), |rs| {
-            Note::ArrivalPlatform(rs)
-        }),
-        map(preceded(tag("arrival track: "), ranges), |rs| {
-            Note::ArrivalTrack(rs)
-        }),
-        map(preceded(tag("class: "), ranges), |rs| Note::Class(rs)),
-        map(preceded(tag("duration: "), ranges), |rs| Note::Duration(rs)),
-        map(preceded(tag("price: "), ranges), |rs| Note::Price(rs)),
-        map(preceded(tag("route: "), ranges), |rs| Note::Route(rs)),
-        map(preceded(tag("row: "), ranges), |rs| Note::Row(rs)),
-        map(preceded(tag("seat: "), ranges), |rs| Note::Seat(rs)),
-        map(preceded(tag("train: "), ranges), |rs| Note::Train(rs)),
-        map(preceded(tag("type: "), ranges), |rs| Note::Type(rs)),
-        map(preceded(tag("wagon: "), ranges), |rs| Note::Wagon(rs)),
-        map(preceded(tag("zone: "), ranges), |rs| Note::Zone(rs)),
+        map(
+            preceded(tag("departure location: "), ranges),
+            Note::DepartureLocation,
+        ),
+        map(
+            preceded(tag("departure station: "), ranges),
+            Note::DepartureStation,
+        ),
+        map(
+            preceded(tag("departure platform: "), ranges),
+            Note::DeparturePlatform,
+        ),
+        map(
+            preceded(tag("departure track: "), ranges),
+            Note::DepartureTrack,
+        ),
+        map(
+            preceded(tag("departure date: "), ranges),
+            Note::DepartureDate,
+        ),
+        map(
+            preceded(tag("departure time: "), ranges),
+            Note::DepartureTime,
+        ),
+        map(
+            preceded(tag("arrival location: "), ranges),
+            Note::ArrivalLocation,
+        ),
+        map(
+            preceded(tag("arrival station: "), ranges),
+            Note::ArrivalStation,
+        ),
+        map(
+            preceded(tag("arrival platform: "), ranges),
+            Note::ArrivalPlatform,
+        ),
+        map(preceded(tag("arrival track: "), ranges), Note::ArrivalTrack),
+        map(preceded(tag("class: "), ranges), Note::Class),
+        map(preceded(tag("duration: "), ranges), Note::Duration),
+        map(preceded(tag("price: "), ranges), Note::Price),
+        map(preceded(tag("route: "), ranges), Note::Route),
+        map(preceded(tag("row: "), ranges), Note::Row),
+        map(preceded(tag("seat: "), ranges), Note::Seat),
+        map(preceded(tag("train: "), ranges), Note::Train),
+        map(preceded(tag("type: "), ranges), Note::Type),
+        map(preceded(tag("wagon: "), ranges), Note::Wagon),
+        map(preceded(tag("zone: "), ranges), Note::Zone),
     ))(input)
 }
 
