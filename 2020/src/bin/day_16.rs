@@ -94,10 +94,7 @@ fn determine_positions(tickets: &[Ticket], notes: &[Note]) -> Vec<(usize, Note)>
     let mut positions: Vec<(usize, Note)> = Vec::with_capacity(notes.len());
 
     for (i, possibility) in possibilities {
-        let remain: &Note = possibility
-            .iter()
-            .find(|p| !seen.contains(*p))
-            .unwrap();
+        let remain: &Note = possibility.iter().find(|p| !seen.contains(*p)).unwrap();
 
         seen.insert(remain);
 
