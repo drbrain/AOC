@@ -230,7 +230,7 @@ impl Pocket4 {
 impl fmt::Debug for Pocket3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for z in self.z_range.clone() {
-            write!(f, "z: {}\n", z)?;
+            writeln!(f, "z: {}", z)?;
 
             for y in self.x_range.clone() {
                 for x in self.y_range.clone() {
@@ -244,9 +244,9 @@ impl fmt::Debug for Pocket3 {
 
                     write!(f, "{}", symbol)?;
                 }
-                write!(f, "\n")?;
+                writeln!(f,)?;
             }
-            write!(f, "\n")?;
+            writeln!(f,)?;
         }
 
         Ok(())
@@ -397,9 +397,8 @@ impl Iterator for Point3Neighbors<'_> {
             self.dx += 1;
         }
 
-        match (self.dx, self.dy, self.dz) {
-            (0, 0, 0) => self.dx += 1,
-            _ => (),
+        if let (0, 0, 0) = (self.dx, self.dy, self.dz) {
+            self.dx += 1;
         }
 
         Some(curr)
@@ -465,9 +464,8 @@ impl Iterator for Point4Neighbors<'_> {
             self.dw += 1;
         }
 
-        match (self.dw, self.dx, self.dy, self.dz) {
-            (0, 0, 0, 0) => self.dw += 1,
-            _ => (),
+        if let (0, 0, 0, 0) = (self.dw, self.dx, self.dy, self.dz) {
+            self.dw += 1;
         }
 
         Some(curr)
