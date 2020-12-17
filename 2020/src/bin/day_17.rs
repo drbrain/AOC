@@ -21,28 +21,28 @@ fn main() -> Result<()> {
     let input = read("./17.input")?;
 
     println!("part A: {}", day_17_a(&input));
-    //println!("part B: {}", day_17_b(&input));
+    println!("part B: {}", day_17_b(&input));
 
     Ok(())
 }
 
 fn day_17_a(input: &str) -> usize {
-    let pocket = Pocket::from(input);
+    let pocket = Pocket3::from(input);
 
     (0..6).fold(pocket, |p, _| p.step()).active()
 }
 
 type Cubes = HashMap<Point3, bool>;
 
-struct Pocket {
+struct Pocket3 {
     cubes: Cubes,
     x_range: Range<i32>,
     y_range: Range<i32>,
     z_range: Range<i32>,
 }
 
-impl Pocket {
-    fn step(self) -> Pocket {
+impl Pocket3 {
+    fn step(self) -> Pocket3 {
         let mut cubes: Cubes = HashMap::new();
 
         self.points().for_each(|p| {
@@ -65,7 +65,7 @@ impl Pocket {
         let y_range = self.y_range.start - 1..self.y_range.end + 1;
         let z_range = self.z_range.start - 1..self.z_range.end + 1;
 
-        Pocket {
+        Pocket3 {
             cubes,
             x_range,
             y_range,
@@ -73,8 +73,8 @@ impl Pocket {
         }
     }
 
-    fn points(&self) -> PocketPointIter {
-        PocketPointIter {
+    fn points(&self) -> PocketPointIter3 {
+        PocketPointIter3 {
             pocket: self,
             x: self.x_range.start,
             y: self.y_range.start,
@@ -87,7 +87,7 @@ impl Pocket {
     }
 }
 
-impl fmt::Debug for Pocket {
+impl fmt::Debug for Pocket3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for z in self.z_range.clone() {
             write!(f, "z: {}\n", z)?;
@@ -113,15 +113,15 @@ impl fmt::Debug for Pocket {
     }
 }
 
-struct PocketPointIter<'a> {
-    pocket: &'a Pocket,
+struct PocketPointIter3<'a> {
+    pocket: &'a Pocket3,
 
     x: i32,
     y: i32,
     z: i32,
 }
 
-impl Iterator for PocketPointIter<'_> {
+impl Iterator for PocketPointIter3<'_> {
     type Item = Point3;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -153,8 +153,8 @@ impl Iterator for PocketPointIter<'_> {
     }
 }
 
-impl From<&str> for Pocket {
-    fn from(input: &str) -> Pocket {
+impl From<&str> for Pocket3 {
+    fn from(input: &str) -> Pocket3 {
         let cubes = pocket(input).unwrap().1;
 
         let x_range = match cubes.keys().minmax_by(|a, b| a.x.cmp(&b.x)) {
@@ -179,7 +179,7 @@ impl From<&str> for Pocket {
             _ => unreachable!(),
         };
 
-        Pocket {
+        Pocket3 {
             cubes,
             x_range,
             y_range,
@@ -288,7 +288,7 @@ mod test {
 
     #[test]
     fn test_day_17_pocket_from() {
-        let pocket = Pocket::from(".#.\n..#\n###");
+        let pocket = Pocket3::from(".#.\n..#\n###");
         let cubes = pocket.cubes;
 
         assert_eq!(cubes.get(&Point3 { x: 0, y: 0, z: 0 }).unwrap(), &false);
