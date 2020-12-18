@@ -104,11 +104,11 @@ fn expr(input: &str) -> IResult<&str, Expr> {
 }
 
 fn lhs(input: &str) -> IResult<&str, Box<Expr>> {
-    map(alt((number, parens)), |e| Box::new(e))(input)
+    map(alt((number, parens)), Box::new)(input)
 }
 
 fn boxed_expr(input: &str) -> IResult<&str, Box<Expr>> {
-    preceded(tag(" "), map(expr, |e| Box::new(e)))(input)
+    preceded(tag(" "), map(expr, Box::new))(input)
 }
 
 fn op(input: &str) -> IResult<&str, Op> {
@@ -127,7 +127,7 @@ fn parens(input: &str) -> IResult<&str, Expr> {
 }
 
 fn number(input: &str) -> IResult<&str, Expr> {
-    map(num_u64, |n| Expr::Num(n))(input)
+    map(num_u64, Expr::Num)(input)
 }
 
 fn num_u64(input: &str) -> IResult<&str, u64> {
