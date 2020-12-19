@@ -4,22 +4,6 @@ version = "0.1.0"
 authors = ["Eric Hodel <drbrain@segment7.net>"]
 edition = "2018"
 
-[[bin]]
-name = "day_1"
-path = "src/bin/day_1.rs"
-
-[[bin]]
-name = "day_2"
-path = "src/bin/day_2.rs"
-
-[[bin]]
-name = "day_3"
-path = "src/bin/day_3.rs"
-
-[[bin]]
-name = "day_6"
-path = "src/bin/day_6.rs"
-
 [dependencies]
 anyhow    = "^1.0"
 itertools = "^0.9"
