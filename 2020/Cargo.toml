@@ -6,5 +6,6 @@ edition = "2018"
 
 [dependencies]
 anyhow    = "^1.0"
+earlgrey  = "^0.3"
 itertools = "^0.9"
 nom       = "^6.0"
