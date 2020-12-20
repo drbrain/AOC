@@ -761,7 +761,7 @@ aaaabbb";
         let count = messages
             .iter()
             .filter(|m| {
-                let mut message = m.chars().into_iter().map(|c| c.to_string());
+                let message = m.chars().into_iter().map(|c| c.to_string());
 
                 let result = EarleyParser::new(grammar.clone()).parse(message);
 
