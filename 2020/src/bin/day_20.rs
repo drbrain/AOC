@@ -49,7 +49,7 @@ struct ImageBuilder<'a> {
     // map an edge to the tiles that have that edge
     edge_tiles: HashMap<Vec<bool>, Vec<&'a Tile>>,
     matches: Option<Matches<'a>>,
-    image: Option<Vec<Vec<bool>>>,
+    //image: Option<Vec<Vec<bool>>>,
 }
 
 impl ImageBuilder<'_> {
@@ -74,12 +74,12 @@ impl ImageBuilder<'_> {
             tiles: tiles_map,
             edge_tiles,
             matches: None,
-            image: None,
+            //image: None,
         }
     }
 
     fn build(&self) {
-        let mut curr = self.tiles.get(&self.corners()[0]).unwrap();
+        let curr = self.tiles.get(&self.corners()[0]).unwrap();
         let neighbors = self.neighbors(curr);
 
         let edges: Vec<(usize, Vec<bool>)> = curr
@@ -173,6 +173,7 @@ impl Tile {
         Tile { id, image }
     }
 
+    #[allow(dead_code)]
     fn trim(&self) -> Vec<Vec<bool>> {
         let col_len = self.image.len();
         let row_len = self.image[0].len();
