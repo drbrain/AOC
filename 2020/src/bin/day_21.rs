@@ -16,7 +16,7 @@ fn main() -> Result<()> {
     let input = read("./21.input")?;
 
     println!("part A: {}", day_21_a(&input));
-    //println!("part B: {}", day_21_b(&input));
+    println!("part B: {}", day_21_b(&input));
 
     Ok(())
 }
@@ -79,6 +79,101 @@ fn day_21_a(input: &str) -> usize {
         .sum()
 }
 
+fn day_21_b(input: &str) -> String {
+    let foods = parse(input).unwrap().1;
+    let mut ingredient_allergens: HashMap<String, HashMap<String, usize>> = HashMap::new();
+    let mut allergen_ingredients: HashMap<String, HashMap<String, usize>> = HashMap::new();
+    let mut allergen_counts: HashMap<String, usize> = HashMap::new();
+    let mut ingredient_counts: HashMap<String, usize> = HashMap::new();
+
+    for food in foods {
+        for allergen in food.allergens {
+            for ingredient in &food.ingredients {
+                if let Some(m) = ingredient_allergens.get_mut(ingredient) {
+                    if let Some(c) = m.get(&allergen) {
+                        m.insert(allergen.clone(), c + 1);
+                    } else {
+                        m.insert(allergen.clone(), 1);
+                    }
+                } else {
+                    let mut map: HashMap<String, usize> = HashMap::new();
+                    map.insert(allergen.clone(), 1);
+                    ingredient_allergens.insert(ingredient.to_string(), map);
+                }
+
+                if let Some(m) = allergen_ingredients.get_mut(&allergen) {
+                    if let Some(c) = m.get(ingredient) {
+                        m.insert(ingredient.clone(), c + 1);
+                    } else {
+                        m.insert(ingredient.clone(), 1);
+                    }
+                } else {
+                    let mut map: HashMap<String, usize> = HashMap::new();
+                    map.insert(ingredient.clone(), 1);
+                    allergen_ingredients.insert(allergen.to_string(), map);
+                }
+            }
+
+            if let Some(c) = allergen_counts.get(&allergen) {
+                allergen_counts.insert(allergen, c + 1);
+            } else {
+                allergen_counts.insert(allergen, 1);
+            }
+        }
+
+        for ingredient in &food.ingredients {
+            if let Some(c) = ingredient_counts.get(ingredient) {
+                ingredient_counts.insert(ingredient.clone(), c + 1);
+            } else {
+                ingredient_counts.insert(ingredient.clone(), 1);
+            }
+        }
+    }
+
+    let allergen_free: Vec<&String> = ingredient_allergens
+        .iter()
+        .filter_map(|(ingredient, allergens)| {
+            if allergens
+                .iter()
+                .any(|(allergen, count)| allergen_counts.get(allergen).unwrap_or(&0) == count)
+            {
+                None
+            } else {
+                Some(ingredient)
+            }
+        })
+        .collect();
+
+    let allergenic: Vec<&String> = ingredient_allergens
+        .iter()
+        .filter_map(|(ingredient, allergens)| {
+            if allergens
+                .iter()
+                .any(|(allergen, count)| allergen_counts.get(allergen).unwrap_or(&0) == count)
+            {
+                Some(ingredient)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let mut a_i = allergen_ingredients.clone();
+
+    for allergen in allergen_ingredients.keys() {
+        if let Some(ingredients) = a_i.get_mut(allergen) {
+            for ingredient in &allergen_free {
+                ingredients.remove(*ingredient);
+            }
+        }
+    }
+
+    dbg!(a_i);
+    dbg!(&allergenic);
+
+    "".to_string()
+}
+
 #[derive(Debug)]
 struct Food {
     ingredients: Vec<String>,
@@ -122,5 +217,15 @@ sqjhc fvjkl (contains soy)
 sqjhc mxmxvkd sbzzf (contains fish)";
 
         assert_eq!(5, day_21_a(&input));
+    }
+
+    #[test]
+    fn test_day_21_b() {
+        let input = "mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+trh fvjkl sbzzf mxmxvkd (contains dairy)
+sqjhc fvjkl (contains soy)
+sqjhc mxmxvkd sbzzf (contains fish)";
+
+        assert_eq!("mxmxvkd,sqjhc,fvjkl".to_string(), day_21_b(&input));
     }
 }
